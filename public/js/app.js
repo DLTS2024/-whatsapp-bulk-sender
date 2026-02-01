@@ -49,7 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-const socket = io();
+// HTTP Polling (cPanel compatible - no WebSocket needed)
+let pollingInterval = null;
+let lastQR = null;
+let wasConnected = false;
 
 // State
 let contacts = [];
@@ -62,43 +65,46 @@ const qrSection = document.getElementById('qrSection');
 const automationSection = document.getElementById('automationSection');
 const statusPill = document.getElementById('statusPill');
 
-// Socket Events
-socket.on('connect', () => console.log('Socket connected'));
+// HTTP Polling for WhatsApp status
+async function pollStatus() {
+    try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
 
-socket.on('qr', (qrDataUrl) => {
-    document.getElementById('qrCode').src = qrDataUrl;
-    document.getElementById('qrCode').style.display = 'block';
-    document.getElementById('qrSpinner').style.display = 'none';
-    updateStatus(false, 'Scan QR Code');
-    showQRSection();
-});
-
-socket.on('ready', () => {
-    updateStatus(true, 'Connected');
-    showAutomationSection();
-    loadStats();
-    loadTemplatesForSelect();
-});
-
-socket.on('status', (data) => {
-    updateStatus(data.connected, data.message);
-    if (data.connected) {
-        showAutomationSection();
-    } else {
-        showQRSection();
+        if (data.connected) {
+            if (!wasConnected) {
+                wasConnected = true;
+                updateStatus(true, 'Connected');
+                showAutomationSection();
+                loadStats();
+                loadTemplatesForSelect();
+            }
+        } else if (data.hasQR) {
+            wasConnected = false;
+            // Fetch QR code
+            const qrRes = await fetch('/api/qr');
+            const qrData = await qrRes.json();
+            if (qrData.qr && qrData.qr !== lastQR) {
+                lastQR = qrData.qr;
+                document.getElementById('qrCode').src = qrData.qr;
+                document.getElementById('qrCode').style.display = 'block';
+                document.getElementById('qrSpinner').style.display = 'none';
+                updateStatus(false, 'Scan QR Code');
+                showQRSection();
+            }
+        } else {
+            wasConnected = false;
+            updateStatus(false, 'Connecting...');
+            showQRSection();
+        }
+    } catch (err) {
+        console.error('Poll error:', err);
     }
-});
+}
 
-socket.on('message-sent', (data) => {
-    updateProgress(data.current, data.total);
-    addLiveLog(data.phone, data.name, data.status, data.error);
-});
-
-socket.on('sending-complete', (data) => {
-    showToast(`Done! Sent: ${data.sent}, Failed: ${data.failed}`, data.failed > 0 ? 'error' : 'success');
-    loadStats();
-    document.getElementById('sendBtn').disabled = false;
-});
+// Start polling every 3 seconds
+pollingInterval = setInterval(pollStatus, 3000);
+pollStatus(); // Initial call
 
 function updateStatus(connected, message) {
     statusPill.className = 'status-pill' + (connected ? ' connected' : '');

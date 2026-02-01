@@ -343,6 +343,14 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+app.get('/api/qr', (req, res) => {
+    if (qrCodeData) {
+        res.json({ qr: qrCodeData });
+    } else {
+        res.json({ qr: null });
+    }
+});
+
 app.post('/api/logout', async (req, res) => {
     try {
         const result = await callWhatsAppAPI('/api/logout', 'POST');
