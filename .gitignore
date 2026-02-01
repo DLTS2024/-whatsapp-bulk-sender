@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# WhatsApp session
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Environment
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

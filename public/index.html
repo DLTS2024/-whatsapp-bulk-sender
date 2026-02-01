@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bulk Sender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                </div>
+                <span>WhatsApp Bulk Sender</span>
+            </div>
+            <div class="header-right">
+                <div class="user-info" id="userInfo" style="display:none;">
+                    <span id="userName"></span>
+                    <span class="license-badge" id="licenseBadge"></span>
+                </div>
+                <div class="status-pill" id="statusPill">
+                    <div class="status-dot"></div>
+                    <span>Connecting...</span>
+                </div>
+                <a href="/admin.html" class="admin-btn" id="adminBtn" style="display:none;" title="Admin Panel">⚙️</a>
+                <button class="logout-btn" onclick="logout()" title="Logout">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- QR Section (when not connected) -->
+            <div class="qr-section" id="qrSection">
+                <div class="qr-card">
+                    <div class="qr-box">
+                        <div class="spinner" id="qrSpinner"></div>
+                        <img id="qrCode" src="" style="display:none;">
+                    </div>
+                    <div class="qr-info">
+                        <h2>Connect WhatsApp</h2>
+                        <ol>
+                            <li>Open WhatsApp on phone</li>
+                            <li>Settings → Linked Devices</li>
+                            <li>Link a Device</li>
+                            <li>Scan this QR code</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automation Panel (when connected) -->
+            <div class="automation-section" id="automationSection" style="display: none;">
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <span class="stat-num" id="totalSent">0</span>
+                        <span class="stat-lbl">Total Sent</span>
+                    </div>
+                    <div class="stat-card success">
+                        <span class="stat-num" id="successCount">0</span>
+                        <span class="stat-lbl">Successful</span>
+                    </div>
+                    <div class="stat-card error">
+                        <span class="stat-num" id="failedCount">0</span>
+                        <span class="stat-lbl">Failed</span>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" data-tab="send">📤 Send Messages</button>
+                    <button class="tab" data-tab="templates">📝 Templates</button>
+                    <button class="tab" data-tab="logs">📋 Logs</button>
+                </div>
+
+                <!-- Send Tab -->
+                <div class="tab-content active" id="send-tab">
+                    <div class="form-card">
+                        <div class="form-group">
+                            <label>1. Message</label>
+                            <select id="templateSelect" onchange="onTemplateSelect()">
+                                <option value="">Choose template...</option>
+                            </select>
+                            <textarea id="customMessage"
+                                placeholder="Type your message... Use {name} for personalization" rows="4"></textarea>
+                            <div class="tip">💡 Use <code>{name}</code> to personalize with contact name from Excel
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>2. Attach Media (Optional)</label>
+                            <div class="upload-box" onclick="document.getElementById('mediaFile').click()">
+                                📎 Click to attach Image or Video
+                            </div>
+                            <input type="file" id="mediaFile" accept="image/*,video/*"
+                                onchange="handleMediaUpload(event)" hidden>
+                            <div class="file-preview" id="mediaPreview" style="display:none;">
+                                <span id="mediaFileName"></span>
+                                <button onclick="clearMedia()">✕</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>3. Upload Contacts (Excel/CSV)</label>
+                            <div class="upload-box" onclick="document.getElementById('excelFile').click()">
+                                📊 Click to upload Excel (phone, name columns)
+                            </div>
+                            <input type="file" id="excelFile" accept=".xlsx,.xls,.csv"
+                                onchange="handleFileUpload(event)" hidden>
+                            <div class="file-preview" id="contactsPreview" style="display:none;">
+                                <span><strong id="phoneCount">0</strong> contacts loaded</span>
+                                <button onclick="clearPhoneNumbers()">✕</button>
+                            </div>
+                        </div>
+
+                        <div class="info-box">⏱️ Messages will be sent with 30 seconds delay between each</div>
+
+                        <button class="send-btn" id="sendBtn" onclick="startSending()" disabled>
+                            🚀 Start Sending
+                        </button>
+
+                        <div class="progress-box" id="progressBox" style="display:none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text"><span id="progressText">0/0</span> - <span
+                                    id="progressPercent">0%</span></div>
+                            <div class="live-log" id="liveLog"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Templates Tab -->
+                <div class="tab-content" id="templates-tab">
+                    <div class="form-card">
+                        <div class="card-header">
+                            <h3>Message Templates</h3>
+                            <button class="add-btn" onclick="showTemplateModal()">+ New</button>
+                        </div>
+                        <div id="templatesList"></div>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div class="tab-content" id="logs-tab">
+                    <div class="form-card">
+                        <div class="card-header">
+                            <h3>Message Logs</h3>
+                            <button class="add-btn" onclick="loadLogs()">Refresh</button>
+                        </div>
+                        <div id="logsList"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Template Modal -->
+    <div class="modal" id="templateModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3 id="modalTitle">New Template</h3><button onclick="closeTemplateModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="templateName" placeholder="Template name">
+                <textarea id="templateMessage" rows="4" placeholder="Message text..."></textarea>
+            </div>
+            <div class="modal-foot">
+                <button class="btn-cancel" onclick="closeTemplateModal()">Cancel</button>
+                <button class="btn-save" onclick="saveTemplate()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

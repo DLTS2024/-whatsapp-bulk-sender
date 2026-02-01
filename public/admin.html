@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - WhatsApp Bulk Sender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wa-green: #25D366;
+            --wa-dark-green: #075E54;
+            --bg-dark: #111b21;
+            --bg-card: #202c33;
+            --bg-input: #2a3942;
+            --border-color: #2a3942;
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+            --error: #ea4335;
+            --success: #00a884;
+            --blue: #53bdeb;
+            --orange: #ff9500;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 span {
+            color: var(--orange);
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btns button,
+        .header-btns a {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .btn-logout {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .btn-logout:hover {
+            background: var(--error);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 800px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 32px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-num.green {
+            color: var(--success);
+        }
+
+        .stat-num.blue {
+            color: var(--blue);
+        }
+
+        .stat-num.orange {
+            color: var(--orange);
+        }
+
+        .stat-num.red {
+            color: var(--error);
+        }
+
+        .stat-lbl {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px;
+            background: var(--bg-card);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .tab:hover {
+            background: var(--bg-input);
+        }
+
+        .tab.active {
+            background: var(--orange);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+        }
+
+        .generate-btn {
+            padding: 12px 24px;
+            background: var(--wa-green);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .generate-btn:hover {
+            background: var(--wa-dark-green);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.unused {
+            background: rgba(83, 189, 235, 0.2);
+            color: var(--blue);
+        }
+
+        .status-badge.active {
+            background: rgba(0, 168, 132, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.expired {
+            background: rgba(234, 67, 53, 0.2);
+            color: var(--error);
+        }
+
+        .license-key {
+            font-family: monospace;
+            background: var(--bg-input);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .copy-btn {
+            padding: 4px 10px;
+            background: var(--bg-input);
+            border: none;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            color: var(--wa-green);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 14px 24px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid var(--success);
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            border-left-color: var(--error);
+        }
+
+        .empty-msg {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--wa-green);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .qr-preview {
+            width: 150px;
+            height: 150px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .qr-preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .save-btn {
+            padding: 14px 32px;
+            background: var(--wa-green);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: var(--wa-dark-green);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>⚙️ <span>Admin Panel</span></h1>
+        <div class="header-btns">
+            <a href="/" class="btn-logout">← Dashboard</a>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-num blue" id="totalUsers">0</span>
+                <span class="stat-lbl">Total Users</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num green" id="activeLicenses">0</span>
+                <span class="stat-lbl">Active Licenses</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num orange" id="unusedLicenses">0</span>
+                <span class="stat-lbl">Unused Licenses</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num red" id="expiredLicenses">0</span>
+                <span class="stat-lbl">Expired</span>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="licenses">🔑 License Keys</button>
+            <button class="tab" data-tab="users">👥 Users</button>
+            <button class="tab" data-tab="settings">💳 Payment Settings</button>
+        </div>
+
+        <!-- Licenses Tab -->
+        <div class="tab-content active" id="licenses-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2>License Keys</h2>
+                    <button class="generate-btn" onclick="generateLicense()">+ Generate New Key</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>License Key</th>
+                            <th>Status</th>
+                            <th>User</th>
+                            <th>Activated</th>
+                            <th>Expires</th>
+                        </tr>
+                    </thead>
+                    <tbody id="licensesList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-content" id="users-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Registered Users</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>License</th>
+                            <th>Expires</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2>💳 Payment & Contact Settings</h2>
+                </div>
+                <form id="settingsForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>UPI ID</label>
+                            <input type="text" id="upi_id" placeholder="yourname@upi">
+                        </div>
+                        <div class="form-group">
+                            <label>Business Name (shown below UPI ID)</label>
+                            <input type="text" id="upi_name" placeholder="Your Business Name">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>WhatsApp Number (with country code, no +)</label>
+                            <input type="text" id="whatsapp_number" placeholder="919876543210">
+                        </div>
+                        <div class="form-group">
+                            <label>License Price (₹)</label>
+                            <input type="text" id="license_price" placeholder="999">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>License Duration</label>
+                        <input type="text" id="license_duration" placeholder="2 Years">
+                    </div>
+                    <div class="form-row" style="align-items: end;">
+                        <div class="form-group">
+                            <label>UPI QR Code Image</label>
+                            <input type="file" id="qr_file" accept="image/*" onchange="handleQRUpload(event)">
+                        </div>
+                        <div class="form-group">
+                            <label>Current QR</label>
+                            <div class="qr-preview" id="qrPreview">
+                                <span style="color:#666; font-size:12px;">No QR</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="save-btn" id="saveSettingsBtn">💾 Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        // Check admin access
+        if (!token || !user.is_admin) {
+            alert('Admin access required');
+            window.location.href = '/login.html';
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+
+        // Load data
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/admin/stats', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const stats = await res.json();
+                document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                document.getElementById('activeLicenses').textContent = stats.activeLicenses || 0;
+                document.getElementById('unusedLicenses').textContent = stats.unusedLicenses || 0;
+                document.getElementById('expiredLicenses').textContent = stats.expiredLicenses || 0;
+            } catch (err) { }
+        }
+
+        async function loadLicenses() {
+            try {
+                const res = await fetch('/api/admin/licenses', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const licenses = await res.json();
+                const tbody = document.getElementById('licensesList');
+
+                if (licenses.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No licenses yet. Generate one!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = licenses.map(l => `
+                    <tr>
+                        <td>
+                            <span class="license-key">${l.license_key}</span>
+                            <button class="copy-btn" onclick="copyKey('${l.license_key}')">Copy</button>
+                        </td>
+                        <td><span class="status-badge ${l.status}">${l.status}</span></td>
+                        <td>${l.user_email || '-'}</td>
+                        <td>${l.activated_at ? formatDate(l.activated_at) : '-'}</td>
+                        <td>${l.expires_at ? formatDate(l.expires_at) : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (err) { }
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const users = await res.json();
+                const tbody = document.getElementById('usersList');
+
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No users yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td>${u.name}${u.is_admin ? ' 👑' : ''}</td>
+                        <td>${u.email}</td>
+                        <td>${u.phone || '-'}</td>
+                        <td>${u.license_key ? '<span class="status-badge active">Active</span>' : '<span class="status-badge unused">None</span>'}</td>
+                        <td>${u.license_expires_at ? formatDate(u.license_expires_at) : '-'}</td>
+                        <td>${formatDate(u.created_at)}</td>
+                    </tr>
+                `).join('');
+            } catch (err) { }
+        }
+
+        async function generateLicense() {
+            try {
+                const res = await fetch('/api/admin/generate-license', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+
+                if (data.license_key) {
+                    showToast('License generated: ' + data.license_key);
+                    loadLicenses();
+                    loadStats();
+                } else {
+                    showToast('Error generating license', true);
+                }
+            } catch (err) {
+                showToast('Error', true);
+            }
+        }
+
+        function copyKey(key) {
+            navigator.clipboard.writeText(key);
+            showToast('Copied to clipboard!');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show' + (isError ? ' error' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        }
+
+        // Initial load
+        loadStats();
+        loadLicenses();
+        loadUsers();
+        loadSettings();
+
+        // Settings functions
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/admin/settings', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const settings = await res.json();
+
+                document.getElementById('upi_id').value = settings.upi_id || '';
+                document.getElementById('upi_name').value = settings.upi_name || '';
+                document.getElementById('whatsapp_number').value = settings.whatsapp_number || '';
+                document.getElementById('license_price').value = settings.license_price || '';
+                document.getElementById('license_duration').value = settings.license_duration || '';
+
+                if (settings.qr_image) {
+                    document.getElementById('qrPreview').innerHTML = `<img src="${settings.qr_image}" alt="QR">`;
+                }
+            } catch (err) {
+                console.error('Error loading settings:', err);
+            }
+        }
+
+        async function handleQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('qr_image', file);
+
+            try {
+                const res = await fetch('/api/admin/upload-qr', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('qrPreview').innerHTML = `<img src="${data.path}" alt="QR">`;
+                    showToast('QR code uploaded!');
+                } else {
+                    showToast('Upload failed', true);
+                }
+            } catch (err) {
+                showToast('Upload error', true);
+            }
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveSettingsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const settings = {
+                    upi_id: document.getElementById('upi_id').value,
+                    upi_name: document.getElementById('upi_name').value,
+                    whatsapp_number: document.getElementById('whatsapp_number').value,
+                    license_price: document.getElementById('license_price').value,
+                    license_duration: document.getElementById('license_duration').value
+                };
+
+                const res = await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (res.ok) {
+                    showToast('Settings saved!');
+                } else {
+                    showToast('Save failed', true);
+                }
+            } catch (err) {
+                showToast('Error saving', true);
+            }
+
+            btn.disabled = false;
+            btn.textContent = '💾 Save Settings';
+        });
+    </script>
+</body>
+
+</html>
