@@ -106,6 +106,54 @@ async function pollStatus() {
 pollingInterval = setInterval(pollStatus, 3000);
 pollStatus(); // Initial call
 
+// Request pairing code for phone number linking
+async function requestPairingCode() {
+    const phoneInput = document.getElementById('linkPhoneNumber');
+    const phoneNumber = phoneInput.value.trim();
+    const errorEl = document.getElementById('pairingError');
+    const btn = document.getElementById('linkPhoneBtn');
+
+    errorEl.style.display = 'none';
+
+    if (!phoneNumber) {
+        errorEl.textContent = 'Please enter a phone number';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Getting...';
+
+    try {
+        const res = await fetch('/api/request-pairing-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber: phoneNumber })
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.pairingCode) {
+            // Show pairing code
+            document.getElementById('pairingCodeText').textContent = data.pairingCode;
+            document.getElementById('pairingCodeDisplay').style.display = 'block';
+            document.getElementById('qrCode').style.display = 'none';
+            document.getElementById('qrSpinner').style.display = 'none';
+
+            showToast('Pairing code generated! Enter it in WhatsApp', 'success');
+        } else {
+            errorEl.textContent = data.error || 'Failed to get pairing code';
+            errorEl.style.display = 'block';
+        }
+    } catch (err) {
+        errorEl.textContent = 'Error: ' + err.message;
+        errorEl.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Get Code';
+}
+
 function updateStatus(connected, message) {
     statusPill.className = 'status-pill' + (connected ? ' connected' : '');
     statusPill.querySelector('span').textContent = message;

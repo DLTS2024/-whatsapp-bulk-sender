@@ -351,6 +351,23 @@ app.get('/api/qr', (req, res) => {
     }
 });
 
+// Request pairing code (Link with phone number)
+app.post('/api/request-pairing-code', async (req, res) => {
+    try {
+        const { phoneNumber } = req.body;
+
+        if (!phoneNumber) {
+            return res.status(400).json({ error: 'Phone number required' });
+        }
+
+        const result = await callWhatsAppAPI('/api/request-pairing-code', 'POST', { phoneNumber });
+        res.json(result);
+    } catch (error) {
+        console.error('Pairing code error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/api/logout', async (req, res) => {
     try {
         const result = await callWhatsAppAPI('/api/logout', 'POST');

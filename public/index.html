@@ -50,15 +50,47 @@
                     <div class="qr-box">
                         <div class="spinner" id="qrSpinner"></div>
                         <img id="qrCode" src="" style="display:none;">
+                        <!-- Pairing Code Display -->
+                        <div id="pairingCodeDisplay" style="display:none; text-align:center;">
+                            <h2 style="color:#25D366; font-size:32px; letter-spacing:4px;" id="pairingCodeText"></h2>
+                            <p style="color:#8696a0; font-size:14px;">Enter this code in WhatsApp</p>
+                        </div>
                     </div>
                     <div class="qr-info">
                         <h2>Connect WhatsApp</h2>
-                        <ol>
-                            <li>Open WhatsApp on phone</li>
-                            <li>Settings → Linked Devices</li>
-                            <li>Link a Device</li>
-                            <li>Scan this QR code</li>
-                        </ol>
+
+                        <!-- Method 1: QR Code -->
+                        <div id="qrMethod" style="margin-bottom:20px;">
+                            <ol>
+                                <li>Open WhatsApp on phone</li>
+                                <li>Settings → Linked Devices</li>
+                                <li>Link a Device</li>
+                                <li>Scan this QR code</li>
+                            </ol>
+                        </div>
+
+                        <!-- Divider -->
+                        <div style="text-align:center; margin:15px 0; color:#8696a0;">
+                            <span style="background:#202c33; padding:0 10px;">OR</span>
+                        </div>
+
+                        <!-- Method 2: Phone Number -->
+                        <div id="phoneMethod">
+                            <p style="color:#8696a0; margin-bottom:10px; font-size:14px;">Link with phone number:</p>
+                            <div style="display:flex; gap:10px;">
+                                <input type="tel" id="linkPhoneNumber" placeholder="+91 9876543210"
+                                    style="flex:1; padding:12px; border-radius:8px; border:1px solid #3b4a54; background:#2a3942; color:white; font-size:16px;">
+                                <button onclick="requestPairingCode()" id="linkPhoneBtn"
+                                    style="padding:12px 20px; background:#25D366; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                                    Get Code
+                                </button>
+                            </div>
+                            <p id="pairingError" style="color:#ea4335; font-size:12px; margin-top:8px; display:none;">
+                            </p>
+                            <p style="color:#8696a0; font-size:12px; margin-top:8px;">
+                                Go to WhatsApp → Linked Devices → Link a Device → "Link with phone number instead"
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
