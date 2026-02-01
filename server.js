@@ -778,3 +778,6 @@ async function startServer() {
 }
 
 startServer();
+
+// Export for Passenger (cPanel)
+module.exports = app;
