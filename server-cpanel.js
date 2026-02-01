@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const XLSX = require('xlsx');
 const jwt = require('jsonwebtoken');
+const fetch = require('node-fetch'); // For Node.js < 18 compatibility
 const { testConnection, UserDB, LicenseDB, TemplateDB, MessageLogDB, SettingsDB } = require('./database');
 
 // ============ CONFIGURATION ============
