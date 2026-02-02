@@ -1,7 +1,7 @@
 {
-    "name": "whatsapp-bulk-sender",
+    "name": "wa-bulk-sender-dltscloud",
     "version": "1.0.0",
-    "description": "WhatsApp Bulk Message Sender Desktop Application",
+    "description": "WA Bulk Sender - DLTSCloud - WhatsApp Bulk Messaging Application",
     "main": "main.js",
     "scripts": {
         "start": "electron .",
@@ -22,8 +22,8 @@
         "electron-builder": "^24.9.1"
     },
     "build": {
-        "appId": "com.dltscloud.whatsapp-bulk-sender",
-        "productName": "WhatsApp Bulk Sender",
+        "appId": "com.dltscloud.wa-bulk-sender",
+        "productName": "WA Bulk Sender - DLTSCloud",
         "directories": {
             "output": "build"
         },

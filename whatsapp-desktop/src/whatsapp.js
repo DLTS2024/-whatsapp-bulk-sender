@@ -111,25 +111,39 @@ class WhatsAppManager extends EventEmitter {
             }
 
             // Format phone number
-            let formattedPhone = phone.replace(/[^0-9]/g, '');
+            let formattedPhone = phone.toString().replace(/[^0-9]/g, '');
+            console.log('📤 Sending to:', formattedPhone);
+
             if (!formattedPhone.includes('@c.us')) {
                 formattedPhone = formattedPhone + '@c.us';
             }
 
-            // Check if registered
-            const isRegistered = await this.client.isRegisteredUser(formattedPhone);
-            if (!isRegistered) {
-                return { success: false, error: 'Number not on WhatsApp', phone };
+            // Check if registered (with timeout)
+            try {
+                const isRegistered = await Promise.race([
+                    this.client.isRegisteredUser(formattedPhone),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+                ]);
+
+                if (!isRegistered) {
+                    console.log('❌ Not on WhatsApp:', formattedPhone);
+                    return { success: false, error: 'Number not on WhatsApp', phone };
+                }
+            } catch (checkError) {
+                console.log('⚠️ Registration check failed, trying to send anyway:', checkError.message);
+                // Continue anyway - number might still be valid
             }
 
             // Send with media if provided
             if (mediaPath && fs.existsSync(mediaPath)) {
+                console.log('📎 With media:', mediaPath);
                 const media = MessageMedia.fromFilePath(mediaPath);
                 await this.client.sendMessage(formattedPhone, media, { caption: message });
             } else {
                 await this.client.sendMessage(formattedPhone, message);
             }
 
+            console.log('✅ Sent to:', formattedPhone);
             return { success: true, phone };
 
         } catch (error) {

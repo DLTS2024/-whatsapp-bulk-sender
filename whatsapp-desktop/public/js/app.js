@@ -133,13 +133,56 @@ contactFile.addEventListener('change', async (e) => {
             totalContactsEl.textContent = contacts.length;
             sendBtn.disabled = contacts.length === 0;
             showToast(`Loaded ${contacts.length} contacts`, 'success');
+
+            // Show contact preview
+            showContactPreview(contacts);
         } else {
             showToast('Error loading file: ' + result.error, 'error');
+            hideContactPreview();
         }
     } catch (error) {
         showToast('Error: ' + error.message, 'error');
+        hideContactPreview();
     }
 });
+
+// Show contact preview
+function showContactPreview(contactList) {
+    const previewSection = document.getElementById('contactPreview');
+    const previewList = document.getElementById('previewList');
+    const previewCount = document.getElementById('previewCount');
+
+    if (!contactList || contactList.length === 0) {
+        hideContactPreview();
+        return;
+    }
+
+    // Update count
+    previewCount.textContent = `${contactList.length} contacts`;
+
+    // Build preview items
+    previewList.innerHTML = contactList.map(contact => {
+        const phone = contact.phone || contact.Phone || contact.number || contact.Number || '';
+        const name = contact.name || contact.Name || 'Unknown';
+        return `
+            <div class="preview-item">
+                <span class="preview-phone">${phone}</span>
+                <span class="preview-name">${name}</span>
+            </div>
+        `;
+    }).join('');
+
+    // Show section
+    previewSection.style.display = 'block';
+}
+
+// Hide contact preview
+function hideContactPreview() {
+    const previewSection = document.getElementById('contactPreview');
+    if (previewSection) {
+        previewSection.style.display = 'none';
+    }
+}
 
 // Send button click
 sendBtn.addEventListener('click', async () => {
