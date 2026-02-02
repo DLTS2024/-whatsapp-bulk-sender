@@ -10,20 +10,37 @@ class WhatsAppManager extends EventEmitter {
         this.client = null;
         this.isReady = false;
         this.qrCode = null;
+        this.authPath = path.join(require('os').homedir(), '.whatsapp-bulk-sender', 'auth');
     }
 
-    async initialize() {
+    // Clear old session data
+    clearSession() {
+        try {
+            if (fs.existsSync(this.authPath)) {
+                fs.rmSync(this.authPath, { recursive: true, force: true });
+                console.log('🗑️ Old session cleared');
+            }
+        } catch (error) {
+            console.error('Clear session error:', error);
+        }
+    }
+
+    async initialize(clearOldSession = false) {
         console.log('🔄 Initializing WhatsApp client...');
 
-        // Auth data path
-        const authPath = path.join(require('os').homedir(), '.whatsapp-bulk-sender', 'auth');
-        if (!fs.existsSync(authPath)) {
-            fs.mkdirSync(authPath, { recursive: true });
+        // Clear old session if requested
+        if (clearOldSession) {
+            this.clearSession();
+        }
+
+        // Create auth directory
+        if (!fs.existsSync(this.authPath)) {
+            fs.mkdirSync(this.authPath, { recursive: true });
         }
 
         this.client = new Client({
             authStrategy: new LocalAuth({
-                dataPath: authPath
+                dataPath: this.authPath
             }),
             puppeteer: {
                 headless: true,
@@ -33,9 +50,19 @@ class WhatsAppManager extends EventEmitter {
                     '--disable-dev-shm-usage',
                     '--disable-accelerated-2d-canvas',
                     '--no-first-run',
-                    '--disable-gpu'
+                    '--disable-gpu',
+                    '--disable-extensions',
+                    '--disable-background-networking',
+                    '--disable-sync',
+                    '--disable-translate',
+                    '--hide-scrollbars',
+                    '--mute-audio',
+                    '--disable-remote-fonts'
                 ]
-            }
+            },
+            // Increase timeouts
+            authTimeoutMs: 120000, // 2 minutes for auth
+            qrMaxRetries: 5
         });
 
         // QR Code event
@@ -49,6 +76,14 @@ class WhatsAppManager extends EventEmitter {
         this.client.on('authenticated', () => {
             console.log('🔐 WhatsApp authenticated');
             this.qrCode = null;
+        });
+
+        // Auth failure event
+        this.client.on('auth_failure', (msg) => {
+            console.log('❌ Authentication failed:', msg);
+            this.emit('auth-failure', msg);
+            // Clear session on auth failure
+            this.clearSession();
         });
 
         // Ready event

@@ -44,6 +44,7 @@ async function initialize() {
         qrSpinner.style.display = 'none';
         qrCode.src = qrDataUrl;
         qrCode.style.display = 'block';
+        document.getElementById('authError').style.display = 'none';
         updateStatus('Scan QR Code', false);
     });
 
@@ -59,10 +60,41 @@ async function initialize() {
         showQRSection();
     });
 
+    window.electronAPI.whatsapp.onAuthFailure(() => {
+        console.log('Auth failed');
+        qrSpinner.style.display = 'none';
+        qrCode.style.display = 'none';
+        document.getElementById('authError').style.display = 'block';
+        updateStatus('Link Failed', false);
+    });
+
     window.electronAPI.whatsapp.onMessageSent((data) => {
         handleMessageSent(data);
     });
 }
+
+// Clear session and retry
+async function clearAndRetry() {
+    updateStatus('Clearing...', false);
+    document.getElementById('authError').style.display = 'none';
+    qrSpinner.style.display = 'block';
+    qrCode.style.display = 'none';
+
+    await window.electronAPI.whatsapp.clearSession();
+    showToast('Session cleared, restarting...', 'success');
+
+    // Re-initialize
+    setTimeout(async () => {
+        await window.electronAPI.whatsapp.initialize(true);
+    }, 1000);
+}
+
+// Setup clear session buttons
+document.getElementById('retryBtn')?.addEventListener('click', clearAndRetry);
+document.getElementById('clearSessionLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearAndRetry();
+});
 
 // Update status
 function updateStatus(text, connected) {

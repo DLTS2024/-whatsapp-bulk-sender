@@ -12,16 +12,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // WhatsApp operations
     whatsapp: {
-        initialize: () => ipcRenderer.invoke('whatsapp:initialize'),
+        initialize: (clearSession) => ipcRenderer.invoke('whatsapp:initialize', clearSession),
         status: () => ipcRenderer.invoke('whatsapp:status'),
         send: (data) => ipcRenderer.invoke('whatsapp:send', data),
         sendBulk: (data) => ipcRenderer.invoke('whatsapp:send-bulk', data),
         logout: () => ipcRenderer.invoke('whatsapp:logout'),
+        clearSession: () => ipcRenderer.invoke('whatsapp:clear-session'),
 
         // Event listeners
         onQR: (callback) => ipcRenderer.on('whatsapp:qr', (event, qr) => callback(qr)),
         onReady: (callback) => ipcRenderer.on('whatsapp:ready', () => callback()),
         onDisconnected: (callback) => ipcRenderer.on('whatsapp:disconnected', () => callback()),
+        onAuthFailure: (callback) => ipcRenderer.on('whatsapp:auth-failure', () => callback()),
         onMessageSent: (callback) => ipcRenderer.on('whatsapp:message-sent', (event, data) => callback(data))
     },
 

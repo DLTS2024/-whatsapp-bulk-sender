@@ -39,6 +39,10 @@
                 <div class="qr-box">
                     <div class="spinner" id="qrSpinner"></div>
                     <img id="qrCode" src="" style="display:none;">
+                    <div id="authError" style="display:none; text-align:center; padding:20px;">
+                        <p style="color:#ea4335; font-size:16px; margin-bottom:16px;">❌ Couldn't link device</p>
+                        <button id="retryBtn" class="btn-retry">🔄 Clear & Retry</button>
+                    </div>
                 </div>
                 <div class="qr-info">
                     <h2>Connect WhatsApp</h2>
@@ -48,6 +52,10 @@
                         <li>Link a Device</li>
                         <li>Scan this QR code</li>
                     </ol>
+                    <p style="margin-top:16px; font-size:12px; color:#8696a0;">
+                        Having trouble? <a href="#" id="clearSessionLink" style="color:#00a884;">Clear session &
+                            retry</a>
+                    </p>
                 </div>
             </div>
         </div>

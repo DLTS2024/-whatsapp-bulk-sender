@@ -118,6 +118,12 @@ function initializeManagers() {
             mainWindow.webContents.send('whatsapp:message-sent', data);
         }
     });
+
+    whatsappManager.on('auth-failure', () => {
+        if (mainWindow) {
+            mainWindow.webContents.send('whatsapp:auth-failure');
+        }
+    });
 }
 
 // ============ IPC HANDLERS ============
@@ -163,9 +169,18 @@ ipcMain.handle('license:demo', async () => {
 });
 
 // WhatsApp operations
-ipcMain.handle('whatsapp:initialize', async () => {
+ipcMain.handle('whatsapp:initialize', async (event, clearSession = false) => {
     try {
-        await whatsappManager.initialize();
+        await whatsappManager.initialize(clearSession);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('whatsapp:clear-session', async () => {
+    try {
+        whatsappManager.clearSession();
         return { success: true };
     } catch (error) {
         return { success: false, error: error.message };
