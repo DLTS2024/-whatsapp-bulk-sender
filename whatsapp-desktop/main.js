@@ -26,7 +26,6 @@ function createWindow() {
         height: 800,
         minWidth: 900,
         minHeight: 600,
-        icon: path.join(__dirname, 'assets', 'icon.ico'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -57,25 +56,37 @@ function createWindow() {
 
 // Create system tray
 function createTray() {
-    const iconPath = path.join(__dirname, 'assets', 'icon.ico');
-    tray = new Tray(iconPath);
+    try {
+        const iconPath = path.join(__dirname, 'assets', 'icon.ico');
+        const fs = require('fs');
 
-    const contextMenu = Menu.buildFromTemplate([
-        { label: 'Open App', click: () => mainWindow.show() },
-        { label: 'WhatsApp Status', enabled: false },
-        { type: 'separator' },
-        {
-            label: 'Quit', click: () => {
-                if (whatsappManager) whatsappManager.destroy();
-                app.exit(0);
-            }
+        // Skip tray if icon doesn't exist
+        if (!fs.existsSync(iconPath)) {
+            console.log('Tray icon not found, skipping tray creation');
+            return;
         }
-    ]);
 
-    tray.setToolTip('WhatsApp Bulk Sender');
-    tray.setContextMenu(contextMenu);
+        tray = new Tray(iconPath);
 
-    tray.on('double-click', () => mainWindow.show());
+        const contextMenu = Menu.buildFromTemplate([
+            { label: 'Open App', click: () => mainWindow.show() },
+            { label: 'WhatsApp Status', enabled: false },
+            { type: 'separator' },
+            {
+                label: 'Quit', click: () => {
+                    if (whatsappManager) whatsappManager.destroy();
+                    app.exit(0);
+                }
+            }
+        ]);
+
+        tray.setToolTip('WhatsApp Bulk Sender');
+        tray.setContextMenu(contextMenu);
+
+        tray.on('double-click', () => mainWindow.show());
+    } catch (error) {
+        console.log('Tray creation failed:', error.message);
+    }
 }
 
 // Initialize managers
@@ -137,6 +148,17 @@ ipcMain.handle('license:logout', async () => {
         await whatsappManager.logout();
     }
     mainWindow.loadFile(path.join(__dirname, 'public', 'login.html'));
+    return { success: true };
+});
+
+// Demo mode - skip license verification for testing
+ipcMain.handle('license:demo', async () => {
+    store.set('license', {
+        key: 'DEMO-MODE',
+        user: { name: 'Demo User', email: 'demo@example.com' },
+        isDemo: true
+    });
+    mainWindow.loadFile(path.join(__dirname, 'public', 'index.html'));
     return { success: true };
 });
 

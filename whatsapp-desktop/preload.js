@@ -6,7 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     license: {
         verify: (key) => ipcRenderer.invoke('license:verify', key),
         check: () => ipcRenderer.invoke('license:check'),
-        logout: () => ipcRenderer.invoke('license:logout')
+        logout: () => ipcRenderer.invoke('license:logout'),
+        enterDemo: () => ipcRenderer.invoke('license:demo')
     },
 
     // WhatsApp operations

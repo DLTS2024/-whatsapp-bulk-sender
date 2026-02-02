@@ -40,9 +40,32 @@
 
             <div class="login-footer">
                 <p>Don't have a license? <a href="https://wa.dltscloud.co.za" target="_blank">Purchase Now</a></p>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #2a3942;">
+                    <button id="demoBtn" class="btn-demo">🎮 Try Demo Mode</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .btn-demo {
+            width: 100%;
+            padding: 12px 20px;
+            background: transparent;
+            border: 1px solid #8696a0;
+            border-radius: 8px;
+            color: #8696a0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-demo:hover {
+            border-color: #00a884;
+            color: #00a884;
+            background: rgba(0, 168, 132, 0.1);
+        }
+    </style>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -82,6 +105,15 @@
             btn.querySelector('.btn-text').style.display = 'inline';
             btn.querySelector('.btn-loader').style.display = 'none';
             btn.disabled = false;
+        });
+
+        // Demo mode handler
+        document.getElementById('demoBtn').addEventListener('click', async () => {
+            try {
+                await window.electronAPI.license.enterDemo();
+            } catch (error) {
+                console.error('Demo mode error:', error);
+            }
         });
     </script>
 </body>
