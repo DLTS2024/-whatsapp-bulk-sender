@@ -1,0 +1,41 @@
+{
+    "name": "whatsapp-bulk-sender",
+    "version": "1.0.0",
+    "description": "WhatsApp Bulk Message Sender Desktop Application",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder --win",
+        "build:all": "electron-builder --win --mac --linux"
+    },
+    "author": "DLTS Cloud",
+    "license": "MIT",
+    "dependencies": {
+        "whatsapp-web.js": "^1.23.0",
+        "qrcode": "^1.5.3",
+        "axios": "^1.6.2",
+        "xlsx": "^0.18.5",
+        "electron-store": "^8.1.0"
+    },
+    "devDependencies": {
+        "electron": "^28.1.0",
+        "electron-builder": "^24.9.1"
+    },
+    "build": {
+        "appId": "com.dltscloud.whatsapp-bulk-sender",
+        "productName": "WhatsApp Bulk Sender",
+        "directories": {
+            "output": "build"
+        },
+        "win": {
+            "target": "nsis",
+            "icon": "assets/icon.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "installerIcon": "assets/icon.ico",
+            "uninstallerIcon": "assets/icon.ico"
+        }
+    }
+}

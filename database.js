@@ -99,6 +99,11 @@ const UserDB = {
         return rows[0] || null;
     },
 
+    // Alias for findById
+    async getById(id) {
+        return this.findById(id);
+    },
+
     async verifyPassword(email, password) {
         const user = await this.findByEmail(email);
         if (!user) return null;
@@ -247,6 +252,47 @@ const LicenseDB = {
 
         await pool.query(
             "UPDATE licenses SET status = 'expired' WHERE status = 'active' AND expires_at < NOW()"
+        );
+    },
+
+    // Alias for findByKey (used by desktop app)
+    async getByCode(licenseKey) {
+        const license = await this.findByKey(licenseKey);
+        if (!license) return null;
+
+        // Map field names for compatibility
+        return {
+            ...license,
+            expiry_date: license.expires_at,
+            max_messages_per_day: license.max_messages || 1000
+        };
+    },
+
+    // Update machine ID for desktop app
+    async updateMachineId(licenseId, machineId) {
+        if (useInMemory) {
+            const license = inMemoryStorage.licenses.find(l => l.id === licenseId);
+            if (license) license.machine_id = machineId;
+            return;
+        }
+
+        await pool.query(
+            'UPDATE licenses SET machine_id = ? WHERE id = ?',
+            [machineId, licenseId]
+        );
+    },
+
+    // Update last active timestamp
+    async updateLastActive(licenseId) {
+        if (useInMemory) {
+            const license = inMemoryStorage.licenses.find(l => l.id === licenseId);
+            if (license) license.last_active = new Date();
+            return;
+        }
+
+        await pool.query(
+            'UPDATE licenses SET last_active = NOW() WHERE id = ?',
+            [licenseId]
         );
     }
 };

@@ -335,6 +335,84 @@ app.get('/api/public/payment-settings', async (req, res) => {
     }
 });
 
+// ============ DESKTOP APP LICENSE ROUTES ============
+
+// Verify desktop app license
+app.post('/api/verify-desktop-license', async (req, res) => {
+    try {
+        const { licenseKey, machineId } = req.body;
+
+        if (!licenseKey) {
+            return res.status(400).json({ valid: false, error: 'License key required' });
+        }
+
+        // Find license by key
+        const license = await LicenseDB.getByCode(licenseKey);
+
+        if (!license) {
+            return res.status(404).json({ valid: false, error: 'License not found' });
+        }
+
+        // Check if license is active
+        if (license.status !== 'active') {
+            return res.status(403).json({ valid: false, error: 'License is not active' });
+        }
+
+        // Check expiry
+        const expiry = new Date(license.expiry_date);
+        if (expiry < new Date()) {
+            return res.status(403).json({ valid: false, error: 'License has expired' });
+        }
+
+        // Get user info
+        const user = await UserDB.getById(license.user_id);
+
+        // Update machine ID if not set (first activation)
+        if (!license.machine_id) {
+            await LicenseDB.updateMachineId(license.id, machineId);
+        } else if (license.machine_id !== machineId) {
+            // Different machine - check policy (allow or restrict)
+            // For now, we'll allow (you can change this to restrict)
+            await LicenseDB.updateMachineId(license.id, machineId);
+        }
+
+        res.json({
+            valid: true,
+            user: user ? { name: user.name, email: user.email } : null,
+            expiresAt: license.expiry_date,
+            features: {
+                maxMessages: license.max_messages_per_day || 1000,
+                mediaAllowed: true
+            }
+        });
+
+    } catch (error) {
+        console.error('License verification error:', error);
+        res.status(500).json({ valid: false, error: 'Server error' });
+    }
+});
+
+// Desktop heartbeat - keeps license active
+app.post('/api/desktop-heartbeat', async (req, res) => {
+    try {
+        const { licenseKey, machineId } = req.body;
+
+        if (!licenseKey) {
+            return res.status(400).json({ error: 'License key required' });
+        }
+
+        const license = await LicenseDB.getByCode(licenseKey);
+        if (license) {
+            await LicenseDB.updateLastActive(license.id);
+        }
+
+        res.json({ success: true });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ============ WHATSAPP STATUS ROUTES ============
 
 app.get('/api/status', (req, res) => {
