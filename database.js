@@ -2,11 +2,12 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
 // Database connection config
+// Database connection config
 const dbConfig = {
     host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'whatsapp_automation'
+    user: 'dltsclou_admin',
+    password: 'whatsapp@123',
+    database: 'dltsclou_whatsapp'
 };
 
 let pool = null;
